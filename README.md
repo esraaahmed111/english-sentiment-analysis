@@ -1,4 +1,3 @@
-## Overview
 End-to-end NLP pipeline that classifies tweets as **Positive**, **Negative**, or **Neutral**
 using three models of increasing complexity on **74,000+ real tweets**.
 
