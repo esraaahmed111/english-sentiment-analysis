@@ -31,14 +31,10 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f" Device: {DEVICE}")
 print(f" GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None'}")
 
+
 # Load Data
-df = pd.read_csv(
-    'twitter_training.csv',
-    header=None,
-    names=['tweet_id', 'entity', 'sentiment', 'text']
-)
-print(f"\nDataset shape : {df.shape}")
-print(df['sentiment'].value_counts())
+df = pd.read_csv('eng_sentiment.csv')
+
 
 # EDA
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -56,6 +52,7 @@ axes[1].set_ylabel('')
 plt.tight_layout()
 plt.show()
 
+
 # Preprocessing
 df = df.dropna(subset=['text', 'sentiment'])
 df = df[df['sentiment'] != 'Irrelevant']
@@ -71,7 +68,6 @@ def clean_text(text):
     return text
 
 df['clean_text'] = df['text'].apply(clean_text)
-
 df = df[df['clean_text'].str.strip() != '']
 
 le = LabelEncoder()
@@ -95,6 +91,7 @@ def plot_confusion_matrix(y_true, y_pred, classes, title):
     plt.tight_layout()
     plt.show()
 
+
 #  Model 1 TF-IDF + Logistic Regression
 print("\n" + "="*55)
 print("MODEL 1: TF-IDF + Logistic Regression")
@@ -115,6 +112,8 @@ print(classification_report(y_test, y_pred_lr, target_names=le.classes_))
 plot_confusion_matrix(y_test, y_pred_lr, le.classes_,
                       'Confusion Matrix — TF-IDF + Logistic Regression')
 
+
+#  Model 2 Bidirectional LSTM
 #  Model 2 Bidirectional LSTM
 print("\n" + "="*55)
 print("MODEL 2: Bidirectional LSTM")
@@ -148,7 +147,7 @@ class TweetDataset(Dataset):
     def __len__(self):        return len(self.y)
     def __getitem__(self, i): return self.X[i], self.y[i]
 
-BATCH = 64
+BATCH        = 64
 train_loader = DataLoader(TweetDataset(X_train_seq, y_train),
                           batch_size=BATCH, shuffle=True,
                           pin_memory=torch.cuda.is_available())
@@ -208,7 +207,7 @@ for ep in range(1, EPOCHS + 1):
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 axes[0].plot(train_losses, marker='o', color='#e74c3c')
 axes[0].set_title('LSTM Train Loss')
-axes[1].plot(val_accs, marker='o', color='#2ecc71')
+axes[1].plot(val_accs,    marker='o', color='#2ecc71')
 axes[1].set_title('LSTM Val Accuracy')
 plt.tight_layout(); plt.show()
 
@@ -216,6 +215,7 @@ _, acc_lstm, y_pred_lstm = run_epoch(lstm_model, test_loader)
 print(f"\n LSTM Accuracy: {acc_lstm*100:.2f}%")
 print(classification_report(y_test, y_pred_lstm, target_names=le.classes_))
 plot_confusion_matrix(y_test, y_pred_lstm, le.classes_, 'Confusion Matrix — BiLSTM')
+
 
 #  Model 3 BERT
 print("\n" + "="*55)
@@ -312,12 +312,13 @@ print(f"\n BERT Accuracy: {acc_bert*100:.2f}%")
 print(classification_report(list(yb_test), y_pred_bert, target_names=le.classes_))
 plot_confusion_matrix(list(yb_test), y_pred_bert, le.classes_, 'Confusion Matrix — BERT')
 
+
 #  Models Comparison
 models = ['TF-IDF + LogReg', 'BiLSTM', 'BERT']
 accs   = [acc_lr*100, acc_lstm*100, acc_bert*100]
 
 plt.figure(figsize=(8, 5))
-bars = plt.bar(models, accs, color=['#3498db','#e67e22','#9b59b6'],
+bars = plt.bar(models, accs, color=['#3498db', '#e67e22', '#9b59b6'],
                width=0.5, edgecolor='black')
 for bar, acc in zip(bars, accs):
     plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
@@ -333,6 +334,7 @@ print("-"*35)
 for m, a in zip(models, accs):
     print(f"  {m:<22}: {a:.2f}%")
 print(f"\n Best: {models[accs.index(max(accs))]} ({max(accs):.2f}%)")
+
 
 #  Inference
 def predict_tfidf(text):
@@ -361,18 +363,18 @@ def predict_bert(text):
     return le.classes_[out.logits.argmax(1).item()], {c: f"{p:.2%}" for c,p in zip(le.classes_, proba)}
 
 
-sample_tweets = [
+sample_texts = [
     "I absolutely love this product! It's amazing and works perfectly!",
     "Terrible experience. Never buying from this brand again. Waste of money.",
     "The product arrived on time. It's okay, nothing special.",
 ]
 
 print("\n Live Predictions\n" + "="*65)
-for tweet in sample_tweets:
-    print(f"\n {tweet}")
+for text in sample_texts:
+    print(f"\n {text}")
     for name, fn in [("TF-IDF+LR", predict_tfidf),
                      ("BiLSTM",    predict_lstm),
                      ("BERT",      predict_bert)]:
-        label, probs = fn(tweet)
+        label, probs = fn(text)
         print(f"   {name:<12}: {label:<10} | {probs}")
 print("\n" + "="*65)
