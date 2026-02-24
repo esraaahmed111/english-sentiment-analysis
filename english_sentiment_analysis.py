@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import re
-import warnings
-warnings.filterwarnings('ignore')
 from collections import Counter
 from tqdm import tqdm
 
@@ -26,6 +24,9 @@ from transformers import (
 )
 
 from torch.optim import AdamW
+
+import warnings
+warnings.filterwarnings('ignore')
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f" Device: {DEVICE}")
