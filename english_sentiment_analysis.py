@@ -94,10 +94,6 @@ def plot_confusion_matrix(y_true, y_pred, classes, title):
 
 
 # Model 1 TF-IDF + Logistic Regression
-print("\n" + "="*55)
-print("MODEL 1: TF-IDF + Logistic Regression")
-print("="*55)
-
 tfidf = TfidfVectorizer(max_features=10000, ngram_range=(1, 2), min_df=2)
 X_train_tfidf = tfidf.fit_transform(X_train)
 X_test_tfidf  = tfidf.transform(X_test)
@@ -115,10 +111,6 @@ plot_confusion_matrix(y_test, y_pred_lr, le.classes_,
 
 
 # Model 2 Bidirectional LSTM
-print("\n" + "="*55)
-print("MODEL 2: Bidirectional LSTM")
-print("="*55)
-
 def build_vocab(texts, max_vocab=10000):
     counter = Counter()
     for text in texts:
@@ -218,10 +210,6 @@ plot_confusion_matrix(y_test, y_pred_lstm, le.classes_, 'Confusion Matrix — Bi
 
 
 # Model 3 BERT
-print("\n" + "="*55)
-print("MODEL 3: BERT")
-print("="*55)
-
 BERT_MODEL   = 'bert-base-uncased'
 BERT_MAX_LEN = 64
 BERT_BATCH   = 32
